@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>E-WASTE · Remote Control</title>
+<style>
+  :root{
+    --bg:#060b18;
+    --panel:#0c1528;
+    --panel-edge:#162040;
+    --line:#1e3a5f;
+    --cyan:#22d3ee;
+    --cyan-dim:#0e7490;
+    --green:#22c55e;
+    --green-dim:#16a34a;
+    --red:#ef4444;
+    --red-dim:#dc2626;
+    --orange:#f59e0b;
+    --purple:#a78bfa;
+    --text-dim:#475569;
+    --text-mid:#94a3b8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0; padding:0; min-height:100vh;
+    background:
+      radial-gradient(circle at 50% 0%, #0c1830 0%, transparent 55%),
+      var(--bg);
+    color:#e2f8ff;
+    font-family:'Courier New', monospace;
+  }
+  body{
+    padding:18px 16px 40px;
+    max-width:480px;
+    margin:0 auto;
+  }
+
+  /* ── header ── */
+  .hdr{ text-align:center; padding:10px 0 18px; }
+  .hdr-title{
+    font-size:18px; font-weight:900; letter-spacing:4px; color:#e2f8ff;
+  }
+  .hdr-sub{
+    font-size:9px; letter-spacing:5px; color:var(--cyan); margin-top:6px;
+  }
+  .neon-line{
+    height:1px; margin:14px 0;
+    background:linear-gradient(90deg, transparent, var(--cyan-dim) 30%, #6366f1 70%, transparent);
+  }
+  .neon-line.green{ background:linear-gradient(90deg, transparent, var(--green-dim) 30%, var(--cyan-dim) 70%, transparent); }
+  .neon-line.orange{ background:linear-gradient(90deg, transparent, var(--orange) 30%, var(--red) 70%, transparent); }
+
+  /* ── connection bar ── */
+  .conn-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--panel); border:1px solid var(--panel-edge); border-radius:8px;
+    padding:10px 14px; margin-bottom:16px;
+  }
+  .conn-bar .label{ font-size:10px; letter-spacing:2px; color:var(--text-mid); }
+  .badge{
+    font-size:10px; letter-spacing:1px; border-radius:4px; padding:4px 10px;
+    border:1px solid; white-space:nowrap;
+  }
+  .badge.red{ background:#1c0a0a; color:#f87171; border-color:#991b1b; }
+  .badge.green{ background:#052e16; color:#22c55e; border-color:#15803d; }
+  .badge.orange{ background:#2a1505; color:#fb923c; border-color:#c2410c; }
+
+  /* ── section ── */
+  .section-header{
+    color:var(--text-dim); font-size:9px; letter-spacing:4px; text-align:center;
+    margin-bottom:10px;
+  }
+  section{ margin-bottom:8px; }
+
+  /* ── start/stop buttons ── */
+  .btn-row{ display:flex; gap:10px; }
+  button.ctrl{
+    flex:1; font-family:'Courier New', monospace; font-weight:700; font-size:13px;
+    letter-spacing:2px; border-radius:8px; padding:18px 10px; border:1px solid;
+    cursor:pointer; transition:transform .08s ease, filter .15s ease;
+  }
+  button.ctrl:active{ transform:scale(0.97); }
+  button.ctrl:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+  #btnStart{
+    background:linear-gradient(90deg,#064e3b,#065f46); color:#6ee7b7; border-color:#059669;
+  }
+  #btnStop{
+    background:linear-gradient(90deg,#450a0a,#7f1d1d); color:#fca5a5; border-color:#dc2626;
+  }
+  .pulse-flash{ filter:brightness(1.6); }
+
+  /* ── product counters ── */
+  .count-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 14px; margin-bottom:8px;
+  }
+  .count-box .name{ font-size:11px; font-weight:700; letter-spacing:2px; }
+  .count-box .val{ font-size:24px; font-weight:900; }
+  .count-box.bat .name, .count-box.bat .val{ color:var(--cyan); }
+  .count-box.board .name, .count-box.board .val{ color:var(--green); }
+  .count-box.changer .name, .count-box.changer .val{ color:#6366f1; }
+  .count-box .val.flash{ animation:flashval .5s ease; }
+  @keyframes flashval{ 0%{ transform:scale(1.25); } 100%{ transform:scale(1); } }
+
+  .total-row{
+    text-align:center; font-size:10px; letter-spacing:2px; color:var(--text-mid);
+    margin:6px 0 2px;
+  }
+  .total-row b{ color:#e2f8ff; font-size:13px; }
+
+  /* ── stats period tabs ── */
+  .tabs{ display:flex; gap:8px; margin-bottom:12px; }
+  .tab{
+    flex:1; text-align:center; font-size:10px; letter-spacing:2px; padding:9px 4px;
+    border-radius:6px; border:1px solid var(--line); color:var(--text-mid);
+    background:var(--panel); cursor:pointer; user-select:none;
+  }
+  .tab.active{
+    color:#0c1528; background:var(--cyan); border-color:var(--cyan); font-weight:700;
+  }
+
+  .stats-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .stat-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:12px; text-align:center;
+  }
+  .stat-card .lbl{ font-size:9px; letter-spacing:2px; color:var(--text-dim); margin-bottom:6px; }
+  .stat-card .num{ font-size:20px; font-weight:900; color:var(--orange); }
+  .stat-card.total{ grid-column:1 / -1; }
+  .stat-card.total .num{ color:#e2f8ff; font-size:26px; }
+  .stats-updated{
+    text-align:center; font-size:9px; color:var(--text-dim); margin-top:10px; letter-spacing:1px;
+  }
+
+  /* ── log ── */
+  .log-box{
+    background:#030710; border:1px solid var(--panel-edge); border-radius:6px;
+    height:120px; overflow-y:auto; padding:8px 10px; font-size:10px; color:var(--text-dim);
+    line-height:1.6;
+  }
+  .log-box div{ white-space:pre-wrap; word-break:break-all; }
+  .log-box .new{ color:var(--cyan); }
+
+  footer{
+    text-align:center; margin-top:24px; font-size:9px; letter-spacing:2px; color:#1e3a5f;
+  }
+</style>
+</head>
+<body>
+
+  <div class="hdr">
+    <div class="hdr-title">E-WASTE SYSTEM</div>
+    <div class="hdr-sub">REMOTE CONTROL · MQTT</div>
+  </div>
+
+  <div class="conn-bar">
+    <span class="label">BROKER</span>
+    <span id="connBadge" class="badge red">● CONNECTING...</span>
+  </div>
+
+  <div class="neon-line"></div>
+
+  <!-- START / STOP -->
+  <section>
+    <div class="section-header">─── ĐIỀU KHIỂN ───</div>
+    <div class="btn-row">
+      <button class="ctrl" id="btnStart" disabled>▶ START</button>
+      <button class="ctrl" id="btnStop" disabled>■ STOP</button>
+    </div>
+  </section>
+
+  <div class="neon-line green"></div>
+
+  <!-- REALTIME COUNTS -->
+  <section>
+    <div class="section-header">─── SẢN PHẨM (REALTIME) ───</div>
+    <div class="count-box bat">
+      <span class="name">BATTERY</span><span class="val" id="valBat">0</span>
+    </div>
+    <div class="count-box board">
+      <span class="name">BOARD</span><span class="val" id="valBoard">0</span>
+    </div>
+    <div class="count-box changer">
+      <span class="name">CHANGER</span><span class="val" id="valChanger">0</span>
+    </div>
+    <div class="total-row">TỔNG · <b id="valTotal">0</b></div>
+  </section>
+
+  <div class="neon-line orange"></div>
+
+  <!-- STATS -->
+  <section>
+    <div class="section-header">─── THỐNG KÊ ───</div>
+    <div class="tabs">
+      <div class="tab active" data-period="hour">GIỜ</div>
+      <div class="tab" data-period="week">TUẦN</div>
+      <div class="tab" data-period="month">THÁNG</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="lbl">BATTERY</div><div class="num" id="statBat">--</div></div>
+      <div class="stat-card"><div class="lbl">BOARD</div><div class="num" id="statBoard">--</div></div>
+      <div class="stat-card"><div class="lbl">CHANGER</div><div class="num" id="statChanger">--</div></div>
+      <div class="stat-card total"><div class="lbl">TỔNG CỘNG</div><div class="num" id="statTotal">--</div></div>
+    </div>
+    <div class="stats-updated" id="statsUpdated">Chưa có dữ liệu — chọn khung thời gian để xin thống kê</div>
+  </section>
+
+  <div class="neon-line"></div>
+
+  <!-- LOG -->
+  <section>
+    <div class="section-header">─── NHẬT KÝ KẾT NỐI ───</div>
+    <div class="log-box" id="logBox"></div>
+  </section>
+
+  <footer>DATN · TRẦN VÕ THỂ · ĐIỆN-ĐIỆN TỬ K62</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ════════════════════════════════════════════════════════════════════
+  //  CẤU HÌNH MQTT — đồng bộ với app Python (HiveMQ Cloud)
+  //  CẢNH BÁO BẢO MẬT: Đây là trang tĩnh (static), không có backend,
+  //  nên username/password MQTT bắt buộc phải để lộ trong mã JS phía
+  //  client (ai mở DevTools / View Source cũng xem được). Để an toàn hơn:
+  //   - Tạo một tài khoản MQTT RIÊNG cho web này, quyền hạn chế (chỉ
+  //     publish được plc/startstop + plc/request_stats, chỉ subscribe
+  //     được plc/soluong + plc/stats) thay vì dùng chung tài khoản admin
+  //     mà app Python đang dùng.
+  //   - Hoặc dựng thêm 1 backend nhỏ (Node/Python) làm proxy để giấu
+  //     credentials — đã được hỏi và bạn chọn phương án static, nên ở
+  //     đây tạm dùng chung thông tin với app Python.
+  // ════════════════════════════════════════════════════════════════════
+  const MQTT_HOST = "9bcf2483324d462d831c18f86a440895.s1.eu.hivemq.cloud";
+  const MQTT_WSS_PORT = 8884;                 // port WebSocket/TLS của HiveMQ Cloud
+  const MQTT_USERNAME = "Vo-The";
+  const MQTT_PASSWORD = "Tranvothehcb2003";
+
+  const TOPIC_STARTSTOP     = "plc/startstop";
+  const TOPIC_SOLUONG       = "plc/soluong";
+  const TOPIC_REQUEST_STATS = "plc/request_stats";
+  const TOPIC_STATS         = "plc/stats";
+
+  // ── DOM refs ──────────────────────────────────────────────────────
+  const connBadge   = document.getElementById('connBadge');
+  const btnStart     = document.getElementById('btnStart');
+  const btnStop      = document.getElementById('btnStop');
+  const valBat        = document.getElementById('valBat');
+  const valBoard      = document.getElementById('valBoard');
+  const valChanger    = document.getElementById('valChanger');
+  const valTotal       = document.getElementById('valTotal');
+  const statBat       = document.getElementById('statBat');
+  const statBoard     = document.getElementById('statBoard');
+  const statChanger   = document.getElementById('statChanger');
+  const statTotal     = document.getElementById('statTotal');
+  const statsUpdated  = document.getElementById('statsUpdated');
+  const logBox        = document.getElementById('logBox');
+  const tabs          = document.querySelectorAll('.tab');
+
+  let currentPeriod = 'hour';
+
+  function log(msg){
+    const line = document.createElement('div');
+    const time = new Date().toLocaleTimeString('vi-VN', {hour12:false});
+    line.textContent = `[${time}] ${msg}`;
+    line.classList.add('new');
+    logBox.appendChild(line);
+    logBox.scrollTop = logBox.scrollHeight;
+    setTimeout(() => line.classList.remove('new'), 1200);
+    // giới hạn 60 dòng để tránh phình DOM
+    while (logBox.children.length > 60) logBox.removeChild(logBox.firstChild);
+  }
+
+  function setBadge(text, color){
+    connBadge.textContent = text;
+    connBadge.className = 'badge ' + color;
+  }
+
+  function flashVal(el){
+    el.classList.remove('flash');
+    void el.offsetWidth; // restart animation
+    el.classList.add('flash');
+  }
+
+  function setControlsEnabled(enabled){
+    btnStart.disabled = !enabled;
+    btnStop.disabled = !enabled;
+  }
+
+  // ── kết nối MQTT qua WebSocket (TLS) ─────────────────────────────
+  setBadge('● CONNECTING...', 'orange');
+  log('Đang kết nối tới broker...');
+
+  const client = mqtt.connect(`wss://${MQTT_HOST}:${MQTT_WSS_PORT}/mqtt`, {
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
+    clientId: 'web-remote-' + Math.random().toString(16).slice(2, 10),
+    reconnectPeriod: 4000,
+    connectTimeout: 8000,
+    clean: true,
+  });
+
+  client.on('connect', () => {
+    setBadge('● CONNECTED', 'green');
+    log('Đã kết nối broker MQTT.');
+    setControlsEnabled(true);
+    client.subscribe([TOPIC_SOLUONG, TOPIC_STATS], (err) => {
+      if (err) log('Lỗi subscribe: ' + err.message);
+      else log(`Đã subscribe ${TOPIC_SOLUONG}, ${TOPIC_STATS}`);
+    });
+    // xin thống kê khung mặc định ngay khi kết nối
+    requestStats(currentPeriod);
+  });
+
+  client.on('reconnect', () => {
+    setBadge('● RECONNECTING...', 'orange');
+    setControlsEnabled(false);
+  });
+
+  client.on('close', () => {
+    setBadge('■ DISCONNECTED', 'red');
+    setControlsEnabled(false);
+  });
+
+  client.on('error', (err) => {
+    log('Lỗi MQTT: ' + (err && err.message ? err.message : err));
+    setBadge('✕ ERROR', 'red');
+  });
+
+  client.on('message', (topic, payload) => {
+    const text = payload.toString();
+    if (topic === TOPIC_SOLUONG){
+      handleSoluong(text);
+    } else if (topic === TOPIC_STATS){
+      handleStats(text);
+    }
+  });
+
+  function handleSoluong(text){
+    try {
+      const d = JSON.parse(text);
+      const bat = Number(d.sp1 ?? 0);
+      const board = Number(d.sp2 ?? 0);
+      const changer = Number(d.sp3 ?? 0);
+      valBat.textContent = bat;
+      valBoard.textContent = board;
+      valChanger.textContent = changer;
+      valTotal.textContent = bat + board + changer;
+      [valBat, valBoard, valChanger].forEach(flashVal);
+      log(`Cập nhật số lượng: BAT=${bat} BOARD=${board} CHANGER=${changer}`);
+    } catch(e){
+      log('Payload plc/soluong không hợp lệ.');
+    }
+  }
+
+  function handleStats(text){
+    try {
+      const d = JSON.parse(text);
+      if (d.period && d.period !== currentPeriod) return; // bỏ qua nếu không khớp tab đang chọn
+      statBat.textContent = d.battery ?? '--';
+      statBoard.textContent = d.board ?? '--';
+      statChanger.textContent = d.changer ?? '--';
+      statTotal.textContent = d.total ?? '--';
+      const time = new Date().toLocaleTimeString('vi-VN', {hour12:false});
+      statsUpdated.textContent = `Cập nhật lúc ${time} · khung: ${periodLabel(d.period)}`;
+      log(`Nhận thống kê (${periodLabel(d.period)}): tổng ${d.total ?? 0}`);
+    } catch(e){
+      log('Payload plc/stats không hợp lệ.');
+    }
+  }
+
+  function periodLabel(p){
+    return { hour: 'GIỜ', week: 'TUẦN', month: 'THÁNG' }[p] || p;
+  }
+
+  // ── publish helpers ──────────────────────────────────────────────
+  function publishStartStop(cmd){
+    if (!client.connected) return;
+    client.publish(TOPIC_STARTSTOP, cmd);
+    log(`Đã gửi lệnh: ${cmd.toUpperCase()}`);
+  }
+
+  function requestStats(period){
+    if (!client.connected) return;
+    client.publish(TOPIC_REQUEST_STATS, period);
+    log(`Đã xin thống kê khung: ${periodLabel(period)}`);
+    statsUpdated.textContent = 'Đang chờ phản hồi...';
+  }
+
+  // ── UI events ─────────────────────────────────────────────────────
+  btnStart.addEventListener('click', () => {
+    publishStartStop('start');
+    btnStart.classList.add('pulse-flash');
+    setTimeout(() => btnStart.classList.remove('pulse-flash'), 200);
+  });
+
+  btnStop.addEventListener('click', () => {
+    publishStartStop('stop');
+    btnStop.classList.add('pulse-flash');
+    setTimeout(() => btnStop.classList.remove('pulse-flash'), 200);
+  });
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentPeriod = tab.dataset.period;
+      statBat.textContent = '--';
+      statBoard.textContent = '--';
+      statChanger.textContent = '--';
+      statTotal.textContent = '--';
+      requestStats(currentPeriod);
+    });
+  });
+
+  setControlsEnabled(false);
+})();
+</script>
+</body>
+</html>
