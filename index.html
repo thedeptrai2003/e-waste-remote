@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E-Waste · Control Panel</title>
+<title>ĐỒ ÁN TỐT NGHIỆP</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -111,8 +111,8 @@
     <div class="lc-icon">⚙️</div>
     <div class="lc-title">E-Waste Control</div>
     <div class="lc-sub">Hệ thống phân loại rác thải điện tử</div>
-    <div class="fld"><label>Tên đăng nhập</label><input type="text" id="inpUser" placeholder="Tên Đăng Nhập" autocomplete="username"></div>
-    <div class="fld"><label>Mật khẩu</label><input type="password" id="inpPass" placeholder="••••••" autocomplete="current-password"></div>
+    <div class="fld"><label>Tên đăng nhập</label><input type="text" id="inpUser" placeholder="Vui lòng điền tên đăng nhập" autocomplete="username"></div>
+    <div class="fld"><label>Mật khẩu</label><input type="password" id="inpPass" placeholder="Vui lòng điền mật khẩu" autocomplete="current-password"></div>
     <div class="lerr" id="loginErr">Tên đăng nhập hoặc mật khẩu không đúng.</div>
     <button class="btn-login" id="btnLogin">Đăng nhập</button>
   </div>
@@ -122,7 +122,7 @@
   <div class="topbar">
     <div class="tb-left">
       <div class="tb-logo">EW</div>
-      <div><div class="tb-title">E-Waste Remote</div><div class="tb-sub">MQTT · HiveMQ Cloud</div></div>
+      <div><div class="tb-title">ĐỒ ÁN TỐT NGHIỆP</div><div class="tb-sub">Phân loại rác thải điện tử</div></div>
     </div>
     <div style="display:flex;align-items:center;gap:9px;">
       <div class="conn-pill connecting" id="connPill"><div class="cdot pulse"></div><span id="connText">Đang kết nối...</span></div>
@@ -179,7 +179,36 @@
   const BROKER="9bcf2483324d462d831c18f86a440895.s1.eu.hivemq.cloud",PORT=8884;
   const USERNAME="Vo-The",PASSWORD="Tranvothehcb2003";
   const T_SS="plc/startstop",T_SL="plc/soluong",T_RQ="plc/request_stats",T_ST="plc/stats";
+  const T_SNAP="plc/request_snapshot";
   const USERS={admin:"123"};
+  const SESSION_KEY="ewaste_session";
+  const SESSION_TTL=2*60*1000; // 2 phút ms
+  let sessionTimer=null;
+
+  /* ── Session helpers ── */
+  function saveSession(){
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({t: Date.now()}));
+  }
+  function clearSession(){
+    sessionStorage.removeItem(SESSION_KEY);
+  }
+  function isSessionValid(){
+    const raw=sessionStorage.getItem(SESSION_KEY);
+    if(!raw) return false;
+    try{ return (Date.now()-JSON.parse(raw).t) < SESSION_TTL; }
+    catch(e){ return false; }
+  }
+  function resetSessionTimer(){
+    saveSession(); // refresh timestamp setiap ada aktivitas
+    if(sessionTimer) clearTimeout(sessionTimer);
+    sessionTimer=setTimeout(()=>{
+      doLogout();
+    }, SESSION_TTL);
+  }
+  // reset timer khi có tương tác người dùng
+  ["click","touchstart","keydown"].forEach(ev=>
+    document.addEventListener(ev, ()=>{ if(isSessionValid()) resetSessionTimer(); }, {passive:true})
+  );
 
   const $=id=>document.getElementById(id);
   const loginScreen=$("loginScreen"),appScreen=$("appScreen");
@@ -194,28 +223,43 @@
   let client=null, period="hour";
 
   /* ── Login ── */
-  function doLogin(){
-    const u=inpUser.value.trim(), p=inpPass.value;
-    if(USERS[u]&&USERS[u]===p){
-      loginErr.style.display="none";
-      loginScreen.style.display="none";
-      appScreen.style.display="block";
-      initMQTT();
-    } else {
-      loginErr.style.display="block";
-      inpPass.value=""; inpPass.focus();
-    }
+  function enterApp(){
+    loginScreen.style.display="none";
+    appScreen.style.display="block";
+    resetSessionTimer();
+    initMQTT();
   }
-  $("btnLogin").addEventListener("click",doLogin);
-  inpPass.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
-  inpUser.addEventListener("keydown",e=>{if(e.key==="Enter")inpPass.focus();});
-  btnLogout.addEventListener("click",()=>{
+
+  function doLogout(){
+    clearSession();
+    if(sessionTimer){ clearTimeout(sessionTimer); sessionTimer=null; }
     if(client){try{client.end(true);}catch(e){}client=null;}
     inpUser.value=""; inpPass.value="";
     appScreen.style.display="none";
     loginScreen.style.display="flex";
     setCtrl(false);
-  });
+  }
+
+  function doLogin(){
+    const u=inpUser.value.trim(), p=inpPass.value;
+    if(USERS[u]&&USERS[u]===p){
+      loginErr.style.display="none";
+      saveSession();
+      enterApp();
+    } else {
+      loginErr.style.display="block";
+      inpPass.value=""; inpPass.focus();
+    }
+  }
+
+  // Restore session khi reload (không bắt đăng nhập lại nếu còn trong 2 phút)
+  if(isSessionValid()){
+    enterApp();
+  }
+  $("btnLogin").addEventListener("click",doLogin);
+  inpPass.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+  inpUser.addEventListener("keydown",e=>{if(e.key==="Enter")inpPass.focus();});
+  btnLogout.addEventListener("click",doLogout);
 
   /* ── MQTT ── */
   function initMQTT(){
@@ -227,7 +271,12 @@
     });
     client.on("connect",()=>{
       setPill("connected"); setCtrl(true);
-      client.subscribe([T_SL,T_ST],err=>{ if(!err) reqStats(period); });
+      client.subscribe([T_SL,T_ST],err=>{
+        if(!err){
+          pub(T_SNAP,"1");   // xin snapshot số lượng hiện tại ngay khi connect
+          reqStats(period);
+        }
+      });
     });
     client.on("reconnect",()=>{ setPill("connecting"); setCtrl(false); });
     client.on("close",()=>{ setPill("error"); setCtrl(false); });
