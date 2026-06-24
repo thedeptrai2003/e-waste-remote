@@ -3,423 +3,281 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>E-WASTE · Remote Control</title>
+<title>E-Waste · Control Panel</title>
 <style>
-  :root{
-    --bg:#060b18;
-    --panel:#0c1528;
-    --panel-edge:#162040;
-    --line:#1e3a5f;
-    --cyan:#22d3ee;
-    --cyan-dim:#0e7490;
-    --green:#22c55e;
-    --green-dim:#16a34a;
-    --red:#ef4444;
-    --red-dim:#dc2626;
-    --orange:#f59e0b;
-    --purple:#a78bfa;
-    --text-dim:#475569;
-    --text-mid:#94a3b8;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#f0f4f8; --surface:#fff; --surface2:#f8fafc; --border:#e2e8f0; --border2:#cbd5e1;
+    --text:#0f172a; --text-mid:#475569; --text-dim:#94a3b8;
+    --blue:#1d4ed8; --blue-lt:#dbeafe; --blue-mid:#3b82f6;
+    --green:#16a34a; --green-lt:#dcfce7;
+    --red:#dc2626; --red-lt:#fee2e2;
+    --orange:#d97706; --orange-lt:#fef3c7;
+    --purple:#7c3aed; --purple-lt:#ede9fe;
+    --cyan:#0891b2; --cyan-lt:#cffafe;
+    --sh-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+    --sh:0 4px 6px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+    --sh-lg:0 10px 25px rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.06);
+    --r:12px; --r-sm:8px;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{
-    margin:0; padding:0; min-height:100vh;
-    background:
-      radial-gradient(circle at 50% 0%, #0c1830 0%, transparent 55%),
-      var(--bg);
-    color:#e2f8ff;
-    font-family:'Courier New', monospace;
-  }
-  body{
-    padding:18px 16px 40px;
-    max-width:480px;
-    margin:0 auto;
-  }
+  html,body{min-height:100vh;background:var(--bg);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--text);}
 
-  /* ── header ── */
-  .hdr{ text-align:center; padding:10px 0 18px; }
-  .hdr-title{
-    font-size:18px; font-weight:900; letter-spacing:4px; color:#e2f8ff;
-  }
-  .hdr-sub{
-    font-size:9px; letter-spacing:5px; color:var(--cyan); margin-top:6px;
-  }
-  .neon-line{
-    height:1px; margin:14px 0;
-    background:linear-gradient(90deg, transparent, var(--cyan-dim) 30%, #6366f1 70%, transparent);
-  }
-  .neon-line.green{ background:linear-gradient(90deg, transparent, var(--green-dim) 30%, var(--cyan-dim) 70%, transparent); }
-  .neon-line.orange{ background:linear-gradient(90deg, transparent, var(--orange) 30%, var(--red) 70%, transparent); }
+  /* LOGIN */
+  #loginScreen{position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#1e3a5f 0%,#1d4ed8 55%,#0891b2 100%);display:flex;align-items:center;justify-content:center;padding:20px;}
+  .lc{background:#fff;border-radius:20px;padding:44px 36px 36px;width:100%;max-width:360px;box-shadow:var(--sh-lg);text-align:center;}
+  .lc-icon{width:60px;height:60px;background:var(--blue-lt);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:26px;}
+  .lc-title{font-size:21px;font-weight:700;margin-bottom:4px;}
+  .lc-sub{font-size:13px;color:var(--text-mid);margin-bottom:28px;}
+  .fld{text-align:left;margin-bottom:14px;}
+  .fld label{display:block;font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase;}
+  .fld input{width:100%;padding:11px 13px;border:1.5px solid var(--border2);border-radius:var(--r-sm);font-size:15px;color:var(--text);background:var(--surface2);outline:none;transition:border-color .15s;}
+  .fld input:focus{border-color:var(--blue-mid);background:#fff;}
+  .lerr{font-size:12px;color:var(--red);background:var(--red-lt);border-radius:6px;padding:8px 12px;margin-bottom:12px;display:none;}
+  .btn-login{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s,transform .08s;}
+  .btn-login:hover{background:#1e40af;}.btn-login:active{transform:scale(.98);}
 
-  /* ── connection bar ── */
-  .conn-bar{
-    display:flex; align-items:center; justify-content:space-between;
-    background:var(--panel); border:1px solid var(--panel-edge); border-radius:8px;
-    padding:10px 14px; margin-bottom:16px;
-  }
-  .conn-bar .label{ font-size:10px; letter-spacing:2px; color:var(--text-mid); }
-  .badge{
-    font-size:10px; letter-spacing:1px; border-radius:4px; padding:4px 10px;
-    border:1px solid; white-space:nowrap;
-  }
-  .badge.red{ background:#1c0a0a; color:#f87171; border-color:#991b1b; }
-  .badge.green{ background:#052e16; color:#22c55e; border-color:#15803d; }
-  .badge.orange{ background:#2a1505; color:#fb923c; border-color:#c2410c; }
+  /* APP */
+  #appScreen{display:none;min-height:100vh;}
+  .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 18px;height:54px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sh-sm);position:sticky;top:0;z-index:50;}
+  .tb-left{display:flex;align-items:center;gap:10px;}
+  .tb-logo{width:30px;height:30px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:900;}
+  .tb-title{font-size:14px;font-weight:700;}
+  .tb-sub{font-size:10px;color:var(--text-dim);}
+  .conn-pill{display:flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:600;border:1px solid;}
+  .conn-pill.connecting{background:var(--orange-lt);color:var(--orange);border-color:#fcd34d;}
+  .conn-pill.connected{background:var(--green-lt);color:var(--green);border-color:#86efac;}
+  .conn-pill.error{background:var(--red-lt);color:var(--red);border-color:#fca5a5;}
+  .cdot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+  .cdot.pulse{animation:pulse 1.4s ease infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .btn-out{background:none;border:1px solid var(--border2);color:var(--text-mid);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer;font-weight:600;}
+  .btn-out:hover{background:var(--red-lt);color:var(--red);border-color:#fca5a5;}
 
-  /* ── section ── */
-  .section-header{
-    color:var(--text-dim); font-size:9px; letter-spacing:4px; text-align:center;
-    margin-bottom:10px;
-  }
-  section{ margin-bottom:8px; }
+  .main{padding:18px;max-width:520px;margin:0 auto;}
+  .sec-lbl{font-size:10px;font-weight:700;letter-spacing:1.2px;color:var(--text-dim);text-transform:uppercase;margin-bottom:9px;margin-top:20px;}
+  .sec-lbl:first-child{margin-top:0;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh-sm);margin-bottom:10px;}
 
-  /* ── start/stop buttons ── */
-  .btn-row{ display:flex; gap:10px; }
-  button.ctrl{
-    flex:1; font-family:'Courier New', monospace; font-weight:700; font-size:13px;
-    letter-spacing:2px; border-radius:8px; padding:18px 10px; border:1px solid;
-    cursor:pointer; transition:transform .08s ease, filter .15s ease;
-  }
-  button.ctrl:active{ transform:scale(0.97); }
-  button.ctrl:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
-  #btnStart{
-    background:linear-gradient(90deg,#064e3b,#065f46); color:#6ee7b7; border-color:#059669;
-  }
-  #btnStop{
-    background:linear-gradient(90deg,#450a0a,#7f1d1d); color:#fca5a5; border-color:#dc2626;
-  }
-  .pulse-flash{ filter:brightness(1.6); }
+  /* ctrl buttons */
+  .ctrl-row{display:flex;gap:10px;}
+  .btn-ctrl{flex:1;padding:15px 10px;border:none;border-radius:var(--r-sm);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .08s,filter .12s;}
+  .btn-ctrl:active{transform:scale(.97);}
+  .btn-ctrl:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  #btnStart{background:var(--green-lt);color:var(--green);border:1.5px solid #86efac;}
+  #btnStart:hover:not(:disabled){background:#bbf7d0;}
+  #btnStop{background:var(--red-lt);color:var(--red);border:1.5px solid #fca5a5;}
+  #btnStop:hover:not(:disabled){background:#fecaca;}
 
-  /* ── product counters ── */
-  .count-box{
-    background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 14px; margin-bottom:8px;
-  }
-  .count-box .name{ font-size:11px; font-weight:700; letter-spacing:2px; }
-  .count-box .val{ font-size:24px; font-weight:900; }
-  .count-box.bat .name, .count-box.bat .val{ color:var(--cyan); }
-  .count-box.board .name, .count-box.board .val{ color:var(--green); }
-  .count-box.changer .name, .count-box.changer .val{ color:#6366f1; }
-  .count-box .val.flash{ animation:flashval .5s ease; }
-  @keyframes flashval{ 0%{ transform:scale(1.25); } 100%{ transform:scale(1); } }
+  /* counts */
+  .cg{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px 15px 12px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;gap:3px;}
+  .cc.bat{border-top:3px solid var(--cyan);}
+  .cc.board{border-top:3px solid var(--green);}
+  .cc.changer{border-top:3px solid var(--purple);}
+  .cc.total{border-top:3px solid var(--blue);grid-column:1/-1;flex-direction:row;align-items:center;justify-content:space-between;padding:13px 15px;}
+  .cc-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+  .cc.bat .cc-lbl{color:var(--cyan);}
+  .cc.board .cc-lbl{color:var(--green);}
+  .cc.changer .cc-lbl{color:var(--purple);}
+  .cc.total .cc-lbl{color:var(--blue);font-size:11px;}
+  .cc-val{font-size:34px;font-weight:800;color:var(--text);line-height:1;}
+  .cc.total .cc-val{font-size:38px;color:var(--blue);}
+  .cc-unit{font-size:11px;color:var(--text-dim);margin-top:1px;}
+  .cc-val.bump{animation:bump .4s ease;}
+  @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
 
-  .total-row{
-    text-align:center; font-size:10px; letter-spacing:2px; color:var(--text-mid);
-    margin:6px 0 2px;
-  }
-  .total-row b{ color:#e2f8ff; font-size:13px; }
+  /* stats */
+  .tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .tab-btn{flex:1;padding:8px 4px;border:1.5px solid var(--border2);border-radius:var(--r-sm);background:var(--surface2);font-size:12px;font-weight:600;color:var(--text-mid);cursor:pointer;text-align:center;transition:all .12s;}
+  .tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .tab-btn:hover:not(.active){background:var(--blue-lt);border-color:var(--blue-mid);color:var(--blue);}
+  .sg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .sc{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px;text-align:center;}
+  .sc.tot{grid-column:1/-1;background:var(--blue-lt);border-color:#93c5fd;}
+  .sc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:5px;}
+  .sc-val{font-size:26px;font-weight:800;color:var(--text);}
+  .sc.tot .sc-val{color:var(--blue);font-size:30px;}
+  .snote{font-size:11px;color:var(--text-dim);text-align:center;margin-top:8px;}
 
-  /* ── stats period tabs ── */
-  .tabs{ display:flex; gap:8px; margin-bottom:12px; }
-  .tab{
-    flex:1; text-align:center; font-size:10px; letter-spacing:2px; padding:9px 4px;
-    border-radius:6px; border:1px solid var(--line); color:var(--text-mid);
-    background:var(--panel); cursor:pointer; user-select:none;
-  }
-  .tab.active{
-    color:#0c1528; background:var(--cyan); border-color:var(--cyan); font-weight:700;
-  }
-
-  .stats-grid{
-    display:grid; grid-template-columns:1fr 1fr; gap:8px;
-  }
-  .stat-card{
-    background:var(--panel); border:1px solid var(--line); border-radius:6px;
-    padding:12px; text-align:center;
-  }
-  .stat-card .lbl{ font-size:9px; letter-spacing:2px; color:var(--text-dim); margin-bottom:6px; }
-  .stat-card .num{ font-size:20px; font-weight:900; color:var(--orange); }
-  .stat-card.total{ grid-column:1 / -1; }
-  .stat-card.total .num{ color:#e2f8ff; font-size:26px; }
-  .stats-updated{
-    text-align:center; font-size:9px; color:var(--text-dim); margin-top:10px; letter-spacing:1px;
-  }
-
-  /* ── log ── */
-  .log-box{
-    background:#030710; border:1px solid var(--panel-edge); border-radius:6px;
-    height:120px; overflow-y:auto; padding:8px 10px; font-size:10px; color:var(--text-dim);
-    line-height:1.6;
-  }
-  .log-box div{ white-space:pre-wrap; word-break:break-all; }
-  .log-box .new{ color:var(--cyan); }
-
-  footer{
-    text-align:center; margin-top:24px; font-size:9px; letter-spacing:2px; color:#1e3a5f;
-  }
+  .foot{text-align:center;padding:22px 20px 30px;font-size:11px;color:var(--text-dim);}
 </style>
 </head>
 <body>
 
-  <div class="hdr">
-    <div class="hdr-title">E-WASTE SYSTEM</div>
-    <div class="hdr-sub">REMOTE CONTROL · MQTT</div>
+<div id="loginScreen">
+  <div class="lc">
+    <div class="lc-icon">⚙️</div>
+    <div class="lc-title">E-Waste Control</div>
+    <div class="lc-sub">Hệ thống phân loại rác thải điện tử</div>
+    <div class="fld"><label>Tên đăng nhập</label><input type="text" id="inpUser" placeholder="admin" autocomplete="username"></div>
+    <div class="fld"><label>Mật khẩu</label><input type="password" id="inpPass" placeholder="••••••" autocomplete="current-password"></div>
+    <div class="lerr" id="loginErr">Tên đăng nhập hoặc mật khẩu không đúng.</div>
+    <button class="btn-login" id="btnLogin">Đăng nhập</button>
+  </div>
+</div>
+
+<div id="appScreen">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">EW</div>
+      <div><div class="tb-title">E-Waste Remote</div><div class="tb-sub">MQTT · HiveMQ Cloud</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px;">
+      <div class="conn-pill connecting" id="connPill"><div class="cdot pulse"></div><span id="connText">Đang kết nối...</span></div>
+      <button class="btn-out" id="btnLogout">Đăng xuất</button>
+    </div>
   </div>
 
-  <div class="conn-bar">
-    <span class="label">BROKER</span>
-    <span id="connBadge" class="badge red">● CONNECTING...</span>
+  <div class="main">
+
+    <div class="sec-lbl">Điều khiển băng tải</div>
+    <div class="card">
+      <div class="ctrl-row">
+        <button class="btn-ctrl" id="btnStart" disabled><span>▶</span> Khởi động</button>
+        <button class="btn-ctrl" id="btnStop"  disabled><span>■</span> Dừng lại</button>
+      </div>
+    </div>
+
+    <div class="sec-lbl">Sản phẩm đã phân loại · Realtime</div>
+    <div class="cg">
+      <div class="cc bat"><div class="cc-lbl">Battery</div><div class="cc-val" id="valBat">—</div><div class="cc-unit">sản phẩm</div></div>
+      <div class="cc board"><div class="cc-lbl">Board</div><div class="cc-val" id="valBoard">—</div><div class="cc-unit">sản phẩm</div></div>
+      <div class="cc changer"><div class="cc-lbl">Changer</div><div class="cc-val" id="valChanger">—</div><div class="cc-unit">sản phẩm</div></div>
+      <div class="cc total"><div><div class="cc-lbl">Tổng cộng</div><div class="cc-unit">tất cả loại</div></div><div class="cc-val" id="valTotal">—</div></div>
+    </div>
+
+    <div class="sec-lbl">Thống kê sản lượng</div>
+    <div class="card" style="padding-bottom:12px;">
+      <div class="tabs">
+        <button class="tab-btn active" data-period="hour">Giờ này</button>
+        <button class="tab-btn" data-period="week">Tuần này</button>
+        <button class="tab-btn" data-period="month">Tháng này</button>
+      </div>
+      <div class="sg">
+        <div class="sc"><div class="sc-lbl">Battery</div><div class="sc-val" id="sBat">—</div></div>
+        <div class="sc"><div class="sc-lbl">Board</div><div class="sc-val" id="sBoard">—</div></div>
+        <div class="sc"><div class="sc-lbl">Changer</div><div class="sc-val" id="sChanger">—</div></div>
+        <div class="sc tot"><div class="sc-lbl">Tổng cộng</div><div class="sc-val" id="sTotal">—</div></div>
+      </div>
+      <div class="snote" id="statsNote">Chọn khung thời gian để tải thống kê</div>
+    </div>
+
   </div>
-
-  <div class="neon-line"></div>
-
-  <!-- START / STOP -->
-  <section>
-    <div class="section-header">─── ĐIỀU KHIỂN ───</div>
-    <div class="btn-row">
-      <button class="ctrl" id="btnStart" disabled>▶ START</button>
-      <button class="ctrl" id="btnStop" disabled>■ STOP</button>
-    </div>
-  </section>
-
-  <div class="neon-line green"></div>
-
-  <!-- REALTIME COUNTS -->
-  <section>
-    <div class="section-header">─── SẢN PHẨM (REALTIME) ───</div>
-    <div class="count-box bat">
-      <span class="name">BATTERY</span><span class="val" id="valBat">0</span>
-    </div>
-    <div class="count-box board">
-      <span class="name">BOARD</span><span class="val" id="valBoard">0</span>
-    </div>
-    <div class="count-box changer">
-      <span class="name">CHANGER</span><span class="val" id="valChanger">0</span>
-    </div>
-    <div class="total-row">TỔNG · <b id="valTotal">0</b></div>
-  </section>
-
-  <div class="neon-line orange"></div>
-
-  <!-- STATS -->
-  <section>
-    <div class="section-header">─── THỐNG KÊ ───</div>
-    <div class="tabs">
-      <div class="tab active" data-period="hour">GIỜ</div>
-      <div class="tab" data-period="week">TUẦN</div>
-      <div class="tab" data-period="month">THÁNG</div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="lbl">BATTERY</div><div class="num" id="statBat">--</div></div>
-      <div class="stat-card"><div class="lbl">BOARD</div><div class="num" id="statBoard">--</div></div>
-      <div class="stat-card"><div class="lbl">CHANGER</div><div class="num" id="statChanger">--</div></div>
-      <div class="stat-card total"><div class="lbl">TỔNG CỘNG</div><div class="num" id="statTotal">--</div></div>
-    </div>
-    <div class="stats-updated" id="statsUpdated">Chưa có dữ liệu — chọn khung thời gian để xin thống kê</div>
-  </section>
-
-  <div class="neon-line"></div>
-
-  <!-- LOG -->
-  <section>
-    <div class="section-header">─── NHẬT KÝ KẾT NỐI ───</div>
-    <div class="log-box" id="logBox"></div>
-  </section>
-
-  <footer>DATN · TRẦN VÕ THỂ · ĐIỆN-ĐIỆN TỬ K62</footer>
+  <div class="foot">DATN · Trần Võ Thể · Điện - Điện tử K62</div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.10.1/mqtt.min.js"></script>
 <script>
 (function(){
   "use strict";
+  const BROKER="9bcf2483324d462d831c18f86a440895.s1.eu.hivemq.cloud",PORT=8884;
+  const USERNAME="Vo-The",PASSWORD="Tranvothehcb2003";
+  const T_SS="plc/startstop",T_SL="plc/soluong",T_RQ="plc/request_stats",T_ST="plc/stats";
+  const USERS={admin:"123"};
 
-  // ════════════════════════════════════════════════════════════════════
-  //  CẤU HÌNH MQTT — đồng bộ với app Python (HiveMQ Cloud)
-  //  CẢNH BÁO BẢO MẬT: Đây là trang tĩnh (static), không có backend,
-  //  nên username/password MQTT bắt buộc phải để lộ trong mã JS phía
-  //  client (ai mở DevTools / View Source cũng xem được). Để an toàn hơn:
-  //   - Tạo một tài khoản MQTT RIÊNG cho web này, quyền hạn chế (chỉ
-  //     publish được plc/startstop + plc/request_stats, chỉ subscribe
-  //     được plc/soluong + plc/stats) thay vì dùng chung tài khoản admin
-  //     mà app Python đang dùng.
-  //   - Hoặc dựng thêm 1 backend nhỏ (Node/Python) làm proxy để giấu
-  //     credentials — đã được hỏi và bạn chọn phương án static, nên ở
-  //     đây tạm dùng chung thông tin với app Python.
-  // ════════════════════════════════════════════════════════════════════
-  const MQTT_HOST = "9bcf2483324d462d831c18f86a440895.s1.eu.hivemq.cloud";
-  const MQTT_WSS_PORT = 8884;                 // port WebSocket/TLS của HiveMQ Cloud
-  const MQTT_USERNAME = "Vo-The";
-  const MQTT_PASSWORD = "Tranvothehcb2003";
+  const $=id=>document.getElementById(id);
+  const loginScreen=$("loginScreen"),appScreen=$("appScreen");
+  const inpUser=$("inpUser"),inpPass=$("inpPass"),loginErr=$("loginErr");
+  const connPill=$("connPill"),connText=$("connText");
+  const btnStart=$("btnStart"),btnStop=$("btnStop"),btnLogout=$("btnLogout");
+  const valBat=$("valBat"),valBoard=$("valBoard"),valChanger=$("valChanger"),valTotal=$("valTotal");
+  const sBat=$("sBat"),sBoard=$("sBoard"),sChanger=$("sChanger"),sTotal=$("sTotal");
+  const statsNote=$("statsNote");
+  const tabBtns=document.querySelectorAll(".tab-btn");
 
-  const TOPIC_STARTSTOP     = "plc/startstop";
-  const TOPIC_SOLUONG       = "plc/soluong";
-  const TOPIC_REQUEST_STATS = "plc/request_stats";
-  const TOPIC_STATS         = "plc/stats";
+  let client=null, period="hour";
 
-  // ── DOM refs ──────────────────────────────────────────────────────
-  const connBadge   = document.getElementById('connBadge');
-  const btnStart     = document.getElementById('btnStart');
-  const btnStop      = document.getElementById('btnStop');
-  const valBat        = document.getElementById('valBat');
-  const valBoard      = document.getElementById('valBoard');
-  const valChanger    = document.getElementById('valChanger');
-  const valTotal       = document.getElementById('valTotal');
-  const statBat       = document.getElementById('statBat');
-  const statBoard     = document.getElementById('statBoard');
-  const statChanger   = document.getElementById('statChanger');
-  const statTotal     = document.getElementById('statTotal');
-  const statsUpdated  = document.getElementById('statsUpdated');
-  const logBox        = document.getElementById('logBox');
-  const tabs          = document.querySelectorAll('.tab');
-
-  let currentPeriod = 'hour';
-
-  function log(msg){
-    const line = document.createElement('div');
-    const time = new Date().toLocaleTimeString('vi-VN', {hour12:false});
-    line.textContent = `[${time}] ${msg}`;
-    line.classList.add('new');
-    logBox.appendChild(line);
-    logBox.scrollTop = logBox.scrollHeight;
-    setTimeout(() => line.classList.remove('new'), 1200);
-    // giới hạn 60 dòng để tránh phình DOM
-    while (logBox.children.length > 60) logBox.removeChild(logBox.firstChild);
+  /* ── Login ── */
+  function doLogin(){
+    const u=inpUser.value.trim(), p=inpPass.value;
+    if(USERS[u]&&USERS[u]===p){
+      loginErr.style.display="none";
+      loginScreen.style.display="none";
+      appScreen.style.display="block";
+      initMQTT();
+    } else {
+      loginErr.style.display="block";
+      inpPass.value=""; inpPass.focus();
+    }
   }
-
-  function setBadge(text, color){
-    connBadge.textContent = text;
-    connBadge.className = 'badge ' + color;
-  }
-
-  function flashVal(el){
-    el.classList.remove('flash');
-    void el.offsetWidth; // restart animation
-    el.classList.add('flash');
-  }
-
-  function setControlsEnabled(enabled){
-    btnStart.disabled = !enabled;
-    btnStop.disabled = !enabled;
-  }
-
-  // ── kết nối MQTT qua WebSocket (TLS) ─────────────────────────────
-  setBadge('● CONNECTING...', 'orange');
-  log('Đang kết nối tới broker...');
-
-  const client = mqtt.connect(`wss://${MQTT_HOST}:${MQTT_WSS_PORT}/mqtt`, {
-    username: MQTT_USERNAME,
-    password: MQTT_PASSWORD,
-    clientId: 'web-remote-' + Math.random().toString(16).slice(2, 10),
-    reconnectPeriod: 4000,
-    connectTimeout: 8000,
-    clean: true,
+  $("btnLogin").addEventListener("click",doLogin);
+  inpPass.addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
+  inpUser.addEventListener("keydown",e=>{if(e.key==="Enter")inpPass.focus();});
+  btnLogout.addEventListener("click",()=>{
+    if(client){try{client.end(true);}catch(e){}client=null;}
+    inpUser.value=""; inpPass.value="";
+    appScreen.style.display="none";
+    loginScreen.style.display="flex";
+    setCtrl(false);
   });
 
-  client.on('connect', () => {
-    setBadge('● CONNECTED', 'green');
-    log('Đã kết nối broker MQTT.');
-    setControlsEnabled(true);
-    client.subscribe([TOPIC_SOLUONG, TOPIC_STATS], (err) => {
-      if (err) log('Lỗi subscribe: ' + err.message);
-      else log(`Đã subscribe ${TOPIC_SOLUONG}, ${TOPIC_STATS}`);
+  /* ── MQTT ── */
+  function initMQTT(){
+    setPill("connecting");
+    client=mqtt.connect("wss://"+BROKER+":"+PORT+"/mqtt",{
+      username:USERNAME, password:PASSWORD,
+      clientId:"web-"+Math.random().toString(16).slice(2,9),
+      reconnectPeriod:4000, connectTimeout:10000, clean:true
     });
-    // xin thống kê khung mặc định ngay khi kết nối
-    requestStats(currentPeriod);
-  });
-
-  client.on('reconnect', () => {
-    setBadge('● RECONNECTING...', 'orange');
-    setControlsEnabled(false);
-  });
-
-  client.on('close', () => {
-    setBadge('■ DISCONNECTED', 'red');
-    setControlsEnabled(false);
-  });
-
-  client.on('error', (err) => {
-    log('Lỗi MQTT: ' + (err && err.message ? err.message : err));
-    setBadge('✕ ERROR', 'red');
-  });
-
-  client.on('message', (topic, payload) => {
-    const text = payload.toString();
-    if (topic === TOPIC_SOLUONG){
-      handleSoluong(text);
-    } else if (topic === TOPIC_STATS){
-      handleStats(text);
-    }
-  });
-
-  function handleSoluong(text){
-    try {
-      const d = JSON.parse(text);
-      const bat = Number(d.sp1 ?? 0);
-      const board = Number(d.sp2 ?? 0);
-      const changer = Number(d.sp3 ?? 0);
-      valBat.textContent = bat;
-      valBoard.textContent = board;
-      valChanger.textContent = changer;
-      valTotal.textContent = bat + board + changer;
-      [valBat, valBoard, valChanger].forEach(flashVal);
-      log(`Cập nhật số lượng: BAT=${bat} BOARD=${board} CHANGER=${changer}`);
-    } catch(e){
-      log('Payload plc/soluong không hợp lệ.');
-    }
-  }
-
-  function handleStats(text){
-    try {
-      const d = JSON.parse(text);
-      if (d.period && d.period !== currentPeriod) return; // bỏ qua nếu không khớp tab đang chọn
-      statBat.textContent = d.battery ?? '--';
-      statBoard.textContent = d.board ?? '--';
-      statChanger.textContent = d.changer ?? '--';
-      statTotal.textContent = d.total ?? '--';
-      const time = new Date().toLocaleTimeString('vi-VN', {hour12:false});
-      statsUpdated.textContent = `Cập nhật lúc ${time} · khung: ${periodLabel(d.period)}`;
-      log(`Nhận thống kê (${periodLabel(d.period)}): tổng ${d.total ?? 0}`);
-    } catch(e){
-      log('Payload plc/stats không hợp lệ.');
-    }
-  }
-
-  function periodLabel(p){
-    return { hour: 'GIỜ', week: 'TUẦN', month: 'THÁNG' }[p] || p;
-  }
-
-  // ── publish helpers ──────────────────────────────────────────────
-  function publishStartStop(cmd){
-    if (!client.connected) return;
-    client.publish(TOPIC_STARTSTOP, cmd);
-    log(`Đã gửi lệnh: ${cmd.toUpperCase()}`);
-  }
-
-  function requestStats(period){
-    if (!client.connected) return;
-    client.publish(TOPIC_REQUEST_STATS, period);
-    log(`Đã xin thống kê khung: ${periodLabel(period)}`);
-    statsUpdated.textContent = 'Đang chờ phản hồi...';
-  }
-
-  // ── UI events ─────────────────────────────────────────────────────
-  btnStart.addEventListener('click', () => {
-    publishStartStop('start');
-    btnStart.classList.add('pulse-flash');
-    setTimeout(() => btnStart.classList.remove('pulse-flash'), 200);
-  });
-
-  btnStop.addEventListener('click', () => {
-    publishStartStop('stop');
-    btnStop.classList.add('pulse-flash');
-    setTimeout(() => btnStop.classList.remove('pulse-flash'), 200);
-  });
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentPeriod = tab.dataset.period;
-      statBat.textContent = '--';
-      statBoard.textContent = '--';
-      statChanger.textContent = '--';
-      statTotal.textContent = '--';
-      requestStats(currentPeriod);
+    client.on("connect",()=>{
+      setPill("connected"); setCtrl(true);
+      client.subscribe([T_SL,T_ST],err=>{ if(!err) reqStats(period); });
     });
-  });
+    client.on("reconnect",()=>{ setPill("connecting"); setCtrl(false); });
+    client.on("close",()=>{ setPill("error"); setCtrl(false); });
+    client.on("error",()=>{ setPill("error"); });
+    client.on("message",(topic,payload)=>{
+      const txt=payload.toString();
+      if(topic===T_SL) onSoluong(txt);
+      else if(topic===T_ST) onStats(txt);
+    });
+  }
 
-  setControlsEnabled(false);
+  function onSoluong(txt){
+    try{
+      const d=JSON.parse(txt);
+      const bat=Number(d.sp1||0), board=Number(d.sp2||0), changer=Number(d.sp3||0);
+      bump(valBat,bat); bump(valBoard,board); bump(valChanger,changer); bump(valTotal,bat+board+changer);
+    }catch(e){}
+  }
+
+  function onStats(txt){
+    try{
+      const d=JSON.parse(txt);
+      if(d.period&&d.period!==period) return;
+      sBat.textContent=d.battery??"—"; sBoard.textContent=d.board??"—";
+      sChanger.textContent=d.changer??"—"; sTotal.textContent=d.total??"—";
+      const t=new Date().toLocaleTimeString("vi-VN",{hour12:false});
+      statsNote.textContent="Cập nhật lúc "+t;
+    }catch(e){}
+  }
+
+  function bump(el,val){
+    if(el.textContent===String(val)) return;
+    el.textContent=val;
+    el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+  }
+
+  function pub(topic,msg){ if(client&&client.connected) client.publish(topic,msg); }
+  function reqStats(p){ pub(T_RQ,p); statsNote.textContent="Đang tải..."; [sBat,sBoard,sChanger,sTotal].forEach(e=>e.textContent="—"); }
+
+  function setPill(s){
+    connPill.className="conn-pill "+s;
+    connPill.querySelector(".cdot").className="cdot"+(s==="connecting"?" pulse":"");
+    connText.textContent={connecting:"Đang kết nối...",connected:"Đã kết nối",error:"Mất kết nối"}[s]||s;
+  }
+  function setCtrl(on){ btnStart.disabled=!on; btnStop.disabled=!on; }
+
+  btnStart.addEventListener("click",()=>{ pub(T_SS,"start"); flash(btnStart); });
+  btnStop.addEventListener("click",()=>{ pub(T_SS,"stop"); flash(btnStop); });
+  function flash(btn){ btn.style.filter="brightness(1.18)"; setTimeout(()=>btn.style.filter="",180); }
+
+  tabBtns.forEach(btn=>btn.addEventListener("click",()=>{
+    tabBtns.forEach(b=>b.classList.remove("active")); btn.classList.add("active");
+    period=btn.dataset.period; reqStats(period);
+  }));
+
+  setCtrl(false);
 })();
 </script>
 </body>
